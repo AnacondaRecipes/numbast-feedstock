@@ -100,3 +100,4 @@ extra:
   recipe-maintainers:
     - cryos
     - isvoid
+    - conda-forge/cuda-python
