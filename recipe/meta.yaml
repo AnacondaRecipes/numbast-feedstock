@@ -1,7 +1,7 @@
 {% set number = 0 %}
 {% set name = "numbast" %}
-{% set version = "0.9.0" %}
-{% set sha256 = "2fe3395904c54d4182dcf9ea63b2f2478797d2ddb0c7465b2fd330ab16df6cce" %}
+{% set version = "0.10.0" %}
+{% set sha256 = "ad3146c05514f09796aae80f579a03efc7c20380c35f4bc2d4c9b5cdc8dc5f43" %}
 
 package:
   name: {{ name|lower }}-split
