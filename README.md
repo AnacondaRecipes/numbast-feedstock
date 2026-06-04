@@ -151,6 +151,7 @@ In order to produce a uniquely identifiable distribution:
 Feedstock Maintainers
 =====================
 
+* [@conda-forge/cuda-python](https://github.com/orgs/conda-forge/teams/cuda-python/)
 * [@cryos](https://github.com/cryos/)
 * [@isvoid](https://github.com/isvoid/)
 
