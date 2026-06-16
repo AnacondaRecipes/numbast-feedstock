@@ -32,8 +32,12 @@ outputs:
         - setuptools_scm
         - scikit-build-core
         - clangdev >=18,<22
-        - llvmdev >=14
-        - llvm >=14
+        # llvmdev/llvm must share clangdev's major version. pkgs/main ships
+        # llvm 22, so the unbounded upstream `>=14` would resolve to 22 and
+        # mismatch clangdev 21 (ast_canopy links libclang against libLLVM).
+        # Cap at <22 so both land on 21.1.8.
+        - llvmdev >=18,<22
+        - llvm >=18,<22
       run:
         - python
         - cuda-version >=12.5,<14
@@ -92,8 +96,15 @@ outputs:
 about:
   home: https://github.com/NVIDIA/numbast
   summary: CUDA C++ to numba.cuda binding generator
+  description: >-
+    Numbast bridges CUDA C++ and Numba CUDA: it reads CUDA C++ headers (via the
+    ast_canopy libclang-based parser) and generates Numba CUDA bindings so the
+    declared types and device functions can be called from numba.cuda kernels.
   license: Apache-2.0
+  license_family: Apache
   license_file: LICENSE
+  doc_url: https://github.com/NVIDIA/numbast
+  dev_url: https://github.com/NVIDIA/numbast
 
 extra:
   feedstock-name: numbast
