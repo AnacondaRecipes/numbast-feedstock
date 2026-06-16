@@ -18,6 +18,7 @@ build:
 outputs:
   - name: ast_canopy
     version: {{ version }}
+    script: build-astcanopy.sh
     requirements:
       build:
         - {{ compiler('c') }}
@@ -29,6 +30,7 @@ outputs:
         - python
         - pip
         - pybind11
+        - pybind11-abi
         - setuptools_scm
         - scikit-build-core
         - clangdev >=18,<22
@@ -49,7 +51,6 @@ outputs:
     build:
       number: {{ number }}
       skip: true  # [win or osx]
-      script: bash {{ RECIPE_DIR }}/build-astcanopy.sh
     test:
       imports:
         - ast_canopy
@@ -62,10 +63,10 @@ outputs:
       license_file: LICENSE
 
   - name: numbast
+    script: build-numbast.sh
     build:
       number: {{ number }}
       skip: true  # [win or osx]
-      script: bash {{ RECIPE_DIR }}/build-numbast.sh
     requirements:
       host:
         - python
@@ -107,6 +108,13 @@ about:
   dev_url: https://github.com/NVIDIA/numbast
 
 extra:
+  skip-lints:
+    # llvm/llvmdev are linked as libraries (libLLVM) by ast_canopy, not used as
+    # compilers — the C/C++ compilers are already provided via {{ compiler() }}.
+    - should_use_compilers
+    # clangdev/llvmdev/llvm carry upstream version ranges (capped to clangdev's
+    # major); they are build tools, not redistributables to pin exactly.
+    - host_section_needs_exact_pinnings
   feedstock-name: numbast
   recipe-maintainers:
     - cryos
