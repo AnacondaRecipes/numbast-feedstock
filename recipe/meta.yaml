@@ -18,7 +18,6 @@ build:
 outputs:
   - name: ast_canopy
     version: {{ version }}
-    script: build-astcanopy.sh
     requirements:
       build:
         - {{ compiler('c') }}
@@ -51,6 +50,7 @@ outputs:
     build:
       number: {{ number }}
       skip: true  # [win or osx]
+      script: bash {{ RECIPE_DIR }}/build-astcanopy.sh
     test:
       imports:
         - ast_canopy
@@ -63,10 +63,10 @@ outputs:
       license_file: LICENSE
 
   - name: numbast
-    script: build-numbast.sh
     build:
       number: {{ number }}
       skip: true  # [win or osx]
+      script: bash {{ RECIPE_DIR }}/build-numbast.sh
     requirements:
       host:
         - python
@@ -87,7 +87,9 @@ outputs:
       imports:
         - numbast
       commands:
-        - python -m numbast --help
+        # numbast writes a debug log to gettempdir()/numbast_function.log; use a
+        # private TMPDIR so a leftover root-owned /tmp file can't block reopen.
+        - TMPDIR=$(mktemp -d) python -m numbast --help
     about:
       home: https://github.com/NVIDIA/numbast
       summary: CUDA C++ to numba.cuda binding generator
@@ -115,6 +117,10 @@ extra:
     # clangdev/llvmdev/llvm carry upstream version ranges (capped to clangdev's
     # major); they are build tools, not redistributables to pin exactly.
     - host_section_needs_exact_pinnings
+    # conda-build builds green with script under outputs/x/build/script; the
+    # outputs/x/script form the linter prefers crashes anaconda-linter
+    # (internal error on output_missing_name), so keep build/script.
+    - wrong_output_script_key
   feedstock-name: numbast
   recipe-maintainers:
     - cryos
