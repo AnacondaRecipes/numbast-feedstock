@@ -29,11 +29,16 @@ outputs:
         - python
         - pip
         - pybind11
+        - pybind11-abi
         - setuptools_scm
         - scikit-build-core
         - clangdev >=18,<22
-        - llvmdev >=14
-        - llvm >=14
+        # llvmdev/llvm must share clangdev's major version. pkgs/main ships
+        # llvm 22, so the unbounded upstream `>=14` would resolve to 22 and
+        # mismatch clangdev 21 (ast_canopy links libclang against libLLVM).
+        # Cap at <22 so both land on 21.1.8.
+        - llvmdev >=18,<22
+        - llvm >=18,<22
       run:
         - python
         - cuda-version >=12.5,<14
@@ -82,7 +87,9 @@ outputs:
       imports:
         - numbast
       commands:
-        - python -m numbast --help
+        # numbast writes a debug log to gettempdir()/numbast_function.log; use a
+        # private TMPDIR so a leftover root-owned /tmp file can't block reopen.
+        - TMPDIR=$(mktemp -d) python -m numbast --help
     about:
       home: https://github.com/NVIDIA/numbast
       summary: CUDA C++ to numba.cuda binding generator
@@ -92,10 +99,28 @@ outputs:
 about:
   home: https://github.com/NVIDIA/numbast
   summary: CUDA C++ to numba.cuda binding generator
+  description: >-
+    Numbast bridges CUDA C++ and Numba CUDA: it reads CUDA C++ headers (via the
+    ast_canopy libclang-based parser) and generates Numba CUDA bindings so the
+    declared types and device functions can be called from numba.cuda kernels.
   license: Apache-2.0
+  license_family: Apache
   license_file: LICENSE
+  doc_url: https://github.com/NVIDIA/numbast
+  dev_url: https://github.com/NVIDIA/numbast
 
 extra:
+  skip-lints:
+    # llvm/llvmdev are linked as libraries (libLLVM) by ast_canopy, not used as
+    # compilers — the C/C++ compilers are already provided via {{ compiler() }}.
+    - should_use_compilers
+    # clangdev/llvmdev/llvm carry upstream version ranges (capped to clangdev's
+    # major); they are build tools, not redistributables to pin exactly.
+    - host_section_needs_exact_pinnings
+    # conda-build builds green with script under outputs/x/build/script; the
+    # outputs/x/script form the linter prefers crashes anaconda-linter
+    # (internal error on output_missing_name), so keep build/script.
+    - wrong_output_script_key
   feedstock-name: numbast
   recipe-maintainers:
     - cryos
