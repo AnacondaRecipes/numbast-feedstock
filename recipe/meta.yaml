@@ -42,7 +42,8 @@ outputs:
         - libclang-cpp 21.1.8
       run:
         - python
-        - cuda-version >=12.5,<14
+        # v0.10.1's rsqrt header shim covers CUDA 13.2, not later 13.x headers.
+        - cuda-version >=12.5,<13.3
         - cuda-nvcc
         - clangdev >=18,<22
         # Needed by clang CUDA wrappers at runtime.
@@ -94,7 +95,8 @@ outputs:
       run:
         - python
         - ast_canopy >=0.5.0
-        - cuda-version >=12.5,<14
+        # v0.10.1's rsqrt header shim covers CUDA 13.2, not later 13.x headers.
+        - cuda-version >=12.5,<13.3
         - cuda-nvrtc
         - numba-cuda >=0.25.0
         # numba-cuda 0.30.4 uses np.row_stack, removed in NumPy 2.5. Bound added
