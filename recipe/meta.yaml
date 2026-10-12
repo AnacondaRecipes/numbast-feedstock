@@ -56,6 +56,10 @@ outputs:
         - ast_canopy
       files:
         - lib/libastcanopy.so
+      requires:
+        - pip
+      commands:
+        - pip check
     about:
       home: https://github.com/NVIDIA/numbast
       summary: CUDA C++ device-function header parser used by Numbast
@@ -86,7 +90,10 @@ outputs:
     test:
       imports:
         - numbast
+      requires:
+        - pip
       commands:
+        - pip check
         # numbast writes a debug log to gettempdir()/numbast_function.log; use a
         # private TMPDIR so a leftover root-owned /tmp file can't block reopen.
         - TMPDIR=$(mktemp -d) python -m numbast --help
