@@ -111,9 +111,7 @@ outputs:
       imports:
         - numbast
         # MLIR backend (numbast[mlir]); numba-cuda-mlir has no py310 build on pkgs/main.
-        - numbast.experimental.mlir                               # [py>=311]
-        - numbast.experimental.mlir.static                        # [py>=311]
-        - numbast.experimental.mlir.tools.static_binding_generator  # [py>=311]
+        - numbast.experimental.mlir  # [py>=311]
       requires:
         - pip
         - numba-cuda-mlir  # [py>=311]
@@ -123,6 +121,8 @@ outputs:
         # private TMPDIR so a leftover root-owned /tmp file can't block reopen.
         - TMPDIR=$(mktemp -d) python -m numbast --help
         - TMPDIR=$(mktemp -d) numbast --help
+        # These MLIR modules open the same debug log at import time, so they need the private TMPDIR too.
+        - TMPDIR=$(mktemp -d) python -c "import numbast.experimental.mlir.static, numbast.experimental.mlir.tools.static_binding_generator"  # [py>=311]
     about:
       home: https://github.com/NVIDIA/numbast
       summary: CUDA C++ to numba.cuda binding generator
