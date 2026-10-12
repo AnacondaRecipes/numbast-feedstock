@@ -28,7 +28,9 @@ outputs:
       host:
         - python
         - pip
-        - pybind11 3.1.0
+        # 3.0.x gives pybind11-abi 11, matching numba-cuda-mlir 0.4.2 on pkgs/main;
+        # pybind11 3.1 (abi 12) would make the two packages impossible to co-install.
+        - pybind11 3.0.4
         - pybind11-abi
         - setuptools_scm
         - scikit-build-core
