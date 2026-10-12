@@ -10,12 +10,14 @@ export CMAKE_PREFIX_PATH="${PREFIX}"
 pushd ast_canopy
 echo "PREFIX: ${PREFIX}"
 echo "cmake; $(ls ${PREFIX}/lib/cmake/clang)"
+# clangdev ships the Clang component libraries (clangTooling, ...) as static
+# archives only; link the shared libclang-cpp and libLLVM instead.
+sed -i 's|PRIVATE ${_clang_targets})|PRIVATE clang-cpp LLVM)|' cpp/cmake/ast_canopy_llvm.cmake
+grep -q 'PRIVATE clang-cpp LLVM)' cpp/cmake/ast_canopy_llvm.cmake
 cmake -S cpp -B cpp/build \
   ${CMAKE_ARGS:-} \
   -DCMAKE_BUILD_TYPE=Release \
-  -DBUILD_SHARED_LIBS=ON \
-  -DBUILD_STATIC_LIBS=OFF \
-  -DCMAKE_CXX_STANDARD=17
+  -DBUILD_SHARED_LIBS=ON
 pushd cpp/build
 ninja install -j${CPU_COUNT}
 popd

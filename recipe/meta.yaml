@@ -4,11 +4,11 @@
 {% set sha256 = "cd52bbcc616d870458891ff816d9199afffa9500936bb81a0c4499d3003fed4c" %}
 
 package:
-  name: {{ name|lower }}-split
+  name: {{ name }}-split
   version: {{ version }}
 
 source:
-  url: https://github.com/NVIDIA/numbast/archive/refs/tags/v{{ version }}.tar.gz
+  url: https://github.com/NVIDIA/{{ name }}/archive/refs/tags/v{{ version }}.tar.gz
   sha256: {{ sha256 }}
 
 build:
@@ -28,17 +28,18 @@ outputs:
       host:
         - python
         - pip
-        - pybind11
+        - pybind11 3.1.0
         - pybind11-abi
         - setuptools_scm
         - scikit-build-core
-        - clangdev >=18,<22
-        # llvmdev/llvm must share clangdev's major version. pkgs/main ships
-        # llvm 22, so the unbounded upstream `>=14` would resolve to 22 and
-        # mismatch clangdev 21 (ast_canopy links libclang against libLLVM).
-        # Cap at <22 so both land on 21.1.8.
-        - llvmdev >=18,<22
-        - llvm >=18,<22
+        # Upstream allows clangdev >=18,<22. llvmdev/llvm must match clangdev's
+        # version: ast_canopy links libclang-cpp and libLLVM together.
+        - clangdev 21.1.8
+        - llvmdev 21.1.8
+        - llvm 21.1.8
+        # Linked instead of the static Clang archives (see build-astcanopy.sh);
+        # its run_exports pin the libclang-cpp runtime.
+        - libclang-cpp 21.1.8
       run:
         - python
         - cuda-version >=12.5,<14
@@ -54,36 +55,51 @@ outputs:
     test:
       imports:
         - ast_canopy
-      files:
-        - lib/libastcanopy.so
+      source_files:
+        - ast_canopy/tests/data/inline_hint_macro_fix.cu
       requires:
         - pip
       commands:
         - pip check
+        - test -f $PREFIX/lib/libastcanopy.so
+        # Parse a CUDA header (no GPU needed); fixture is upstream's 0.10.1 regression test.
+        - python -c 'import os, ast_canopy; f = os.path.abspath("ast_canopy/tests/data/inline_hint_macro_fix.cu"); d = ast_canopy.parse_declarations_from_source(f, [f], "sm_80"); r = dict((x.name, x.return_type.name) for x in d.functions); assert r["inline_hint_void"] == "void" and r["inline_hint_int"] == "int", r'
     about:
       home: https://github.com/NVIDIA/numbast
       summary: CUDA C++ device-function header parser used by Numbast
+      description: >-
+        ast_canopy parses CUDA C++ headers with Clang and exposes the declared
+        functions, structs, templates and enums to Python. Numbast uses it to
+        generate Numba CUDA bindings.
       license: Apache-2.0
+      license_family: Apache
       license_file: LICENSE
+      doc_url: https://github.com/NVIDIA/numbast
+      dev_url: https://github.com/NVIDIA/numbast
 
   - name: numbast
     build:
       number: {{ number }}
-      skip: true  # [win or osx]
+      # Upstream requires-python is >=3.7.
+      skip: true  # [win or osx or py<37]
       script: bash {{ RECIPE_DIR }}/build-numbast.sh
+      entry_points:
+        - numbast = numbast.tools.static_binding_generator:static_binding_generator
     requirements:
       host:
         - python
         - pip
         - setuptools >=61.0
         - setuptools_scm
-        - ast_canopy >=0.5.0
       run:
         - python
         - ast_canopy >=0.5.0
         - cuda-version >=12.5,<14
         - cuda-nvrtc
         - numba-cuda >=0.25.0
+        # numba-cuda 0.30.4 uses np.row_stack, removed in NumPy 2.5. Bound added
+        # upstream after 0.10.1: https://github.com/NVIDIA/numbast/pull/386
+        - numpy <2.5
         - pyyaml
         - click
         - jinja2
@@ -97,11 +113,19 @@ outputs:
         # numbast writes a debug log to gettempdir()/numbast_function.log; use a
         # private TMPDIR so a leftover root-owned /tmp file can't block reopen.
         - TMPDIR=$(mktemp -d) python -m numbast --help
+        - TMPDIR=$(mktemp -d) numbast --help
     about:
       home: https://github.com/NVIDIA/numbast
       summary: CUDA C++ to numba.cuda binding generator
+      description: >-
+        Numbast bridges CUDA C++ and Numba CUDA: it reads CUDA C++ headers (via the
+        ast_canopy libclang-based parser) and generates Numba CUDA bindings so the
+        declared types and device functions can be called from numba.cuda kernels.
       license: Apache-2.0
+      license_family: Apache
       license_file: LICENSE
+      doc_url: https://github.com/NVIDIA/numbast
+      dev_url: https://github.com/NVIDIA/numbast
 
 about:
   home: https://github.com/NVIDIA/numbast
@@ -121,9 +145,6 @@ extra:
     # llvm/llvmdev are linked as libraries (libLLVM) by ast_canopy, not used as
     # compilers — the C/C++ compilers are already provided via {{ compiler() }}.
     - should_use_compilers
-    # clangdev/llvmdev/llvm carry upstream version ranges (capped to clangdev's
-    # major); they are build tools, not redistributables to pin exactly.
-    - host_section_needs_exact_pinnings
     # conda-build builds green with script under outputs/x/build/script; the
     # outputs/x/script form the linter prefers crashes anaconda-linter
     # (internal error on output_missing_name), so keep build/script.
