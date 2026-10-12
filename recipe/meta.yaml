@@ -1,7 +1,7 @@
 {% set number = 0 %}
 {% set name = "numbast" %}
-{% set version = "0.10.0" %}
-{% set sha256 = "ad3146c05514f09796aae80f579a03efc7c20380c35f4bc2d4c9b5cdc8dc5f43" %}
+{% set version = "0.10.1" %}
+{% set sha256 = "cd52bbcc616d870458891ff816d9199afffa9500936bb81a0c4499d3003fed4c" %}
 
 package:
   name: {{ name|lower }}-split
@@ -46,7 +46,7 @@ outputs:
         - clangdev >=18,<22
         # Needed by clang CUDA wrappers at runtime.
         - libcurand-dev
-        - cuda-pathfinder
+        - cuda-pathfinder >=1.3,<2
     build:
       number: {{ number }}
       skip: true  # [win or osx]
@@ -71,7 +71,7 @@ outputs:
       host:
         - python
         - pip
-        - setuptools
+        - setuptools >=61.0
         - setuptools_scm
         - ast_canopy >=0.5.0
       run:
