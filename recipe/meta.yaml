@@ -108,8 +108,13 @@ outputs:
     test:
       imports:
         - numbast
+        # MLIR backend (numbast[mlir]); numba-cuda-mlir has no py310 build on pkgs/main.
+        - numbast.experimental.mlir                               # [py>=311]
+        - numbast.experimental.mlir.static                        # [py>=311]
+        - numbast.experimental.mlir.tools.static_binding_generator  # [py>=311]
       requires:
         - pip
+        - numba-cuda-mlir  # [py>=311]
       commands:
         - pip check
         # numbast writes a debug log to gettempdir()/numbast_function.log; use a
