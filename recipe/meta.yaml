@@ -149,7 +149,7 @@ about:
   license: Apache-2.0
   license_family: Apache
   license_file: LICENSE
-  doc_url: https://github.com/NVIDIA/numbast
+  doc_url: https://nvidia.github.io/numbast/latest/
   dev_url: https://github.com/NVIDIA/numbast
 
 extra:
