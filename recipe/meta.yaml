@@ -47,7 +47,7 @@ outputs:
         # v0.10.1's rsqrt header shim covers CUDA 13.2, not later 13.x headers.
         - cuda-version >=12.5,<13.3
         - cuda-nvcc
-        - clangdev >=18,<22
+        - {{ pin_compatible('clangdev', max_pin='x.x') }}
         # Needed by clang CUDA wrappers at runtime.
         - libcurand-dev
         - cuda-pathfinder >=1.3,<2
