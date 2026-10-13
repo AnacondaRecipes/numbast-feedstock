@@ -65,6 +65,9 @@ outputs:
       commands:
         - pip check
         - test -f $PREFIX/lib/libastcanopy.so
+        # Runtime clang++ must match the libclang-cpp21.1 that libastcanopy links.
+        - python -c "import shutil, ast_canopy.api as a; d = a.get_clang_resource_dir(shutil.which('clang++')); assert d.rstrip('/').endswith('/clang/21'), d"
+        - pytest -v ast_canopy/tests
         # Parse a CUDA header (no GPU needed); fixture is upstream's 0.10.1 regression test.
         - python -c 'import os, ast_canopy; f = os.path.abspath("ast_canopy/tests/data/inline_hint_macro_fix.cu"); d = ast_canopy.parse_declarations_from_source(f, [f], "sm_80"); r = dict((x.name, x.return_type.name) for x in d.functions); assert r["inline_hint_void"] == "void" and r["inline_hint_int"] == "int", r'
     about:
