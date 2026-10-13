@@ -59,9 +59,10 @@ outputs:
       imports:
         - ast_canopy
       source_files:
-        - ast_canopy/tests/data/inline_hint_macro_fix.cu
+        - ast_canopy/tests
       requires:
         - pip
+        - pytest
       commands:
         - pip check
         - test -f $PREFIX/lib/libastcanopy.so
