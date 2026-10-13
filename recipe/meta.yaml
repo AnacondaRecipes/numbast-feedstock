@@ -24,7 +24,7 @@ outputs:
         - {{ compiler('cxx') }}
         - {{ stdlib('c') }}
         - cmake >=3.29
-        - ninja
+        - ninja-base
       host:
         - python
         - pip
